@@ -102,6 +102,9 @@ Sub XLCode()
     Loop
     Application.DisplayAlerts = False
     wkbReport.Sheets("Volume").Delete
+    wksData.Delete
+    wkbReport.Sheets("DistributionKeys").Delete
+    wkbReport.Sheets("SalesVolume").Delete
     Application.DisplayAlerts = True
     Application.Calculation = xlCalculationAutomatic
     
@@ -178,7 +181,6 @@ Sub XLCode()
     End If
     Application.Calculation = xlCalculationAutomatic
 
-On Error GoTo 0
 End Sub
 Function GetRecordSet(ByVal sql As String) As Object
     Dim rsData As Object, connection As Object
