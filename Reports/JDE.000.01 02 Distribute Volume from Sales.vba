@@ -102,7 +102,7 @@ Sub XLCode()
     Loop
     Application.DisplayAlerts = False
     wkbReport.Sheets("Volume").Delete
-    wksData.Delete
+    wksData.Visible = xlSheetHidden
     wkbReport.Sheets("DistributionKeys").Delete
     wkbReport.Sheets("SalesVolume").Delete
     Application.DisplayAlerts = True
