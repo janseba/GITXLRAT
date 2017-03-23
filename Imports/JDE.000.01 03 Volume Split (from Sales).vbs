@@ -8,7 +8,7 @@ Sub XLCode()
 If GetSQL("SELECT Locked FROM sources WHERE Source = " & Quot(planVersion)) = "y" Then
     XLImp "ERROR", "The plan version has been locked for input": Exit Sub
 End If
-    Set rs = GetEmptyRecordSet("SELECT * FROM tblFactsTemp WHERE PlanVersion IS NULL")
+    Set rs = GetEmptyRecordSet("SELECT * FROM tblDistributionKeys WHERE PlanVersion IS NULL")
     startPeriod = CInt(Right(periodFrom, 2))
     
     With wks
@@ -17,15 +17,11 @@ End If
                 For period = startPeriod To 12
                     If .Cells(row, period + 20) <> 0 Then
                         rs.AddNew
-                        rs.Fields("Country") = country
                         rs.Fields("PlanVersion") = planVersion
                         rs.Fields("Period") = CLng(Left(periodFrom, 4)) * 100 + period
-                        rs.Fields("Forecast") = "yes"
-                        rs.Fields("Product") = .Cells(row, 4)
-                        rs.Fields("PlanningCustomer") = .[D1]
-                        rs.Fields("PromoNonPromo") = "NonPromo"
+                        rs.Fields("SKU") = LEFT(.Cells(row, 4),InStr(.Cells(row,4)," |") - 1)
+                        rs.Fields("PlanningCustomer") = .[C1]
                         rs.Fields("VolumeSplit") = .Cells(row, period + 6)
-                        rs.Fields("Volume") = .Cells(row, period + 20)
                     End If
                 Next period
             End If
@@ -35,8 +31,7 @@ End If
 	Dim salesCustomer As String
 	salesCustomer = wks.[D1]
     Set connection = GetDBConnection: connection.Open
-    connection.Execute "DELETE FROM tblFactsTemp WHERE PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country) & _
-        " AND PlanningCustomer = " & Quot(salesCustomer)
+    connection.Execute "DELETE FROM tblDistributionKeys WHERE PlanVersion = " & Quot(planVersion) & " AND PlanningCustomer = " & Quot(wks.[C1])
     rs.ActiveConnection = connection
     rs.UpdateBatch
     connection.Close
@@ -59,10 +54,11 @@ Function GetEmptyRecordSet(ByVal sTable As String) As Object
     Set GetEmptyRecordSet = rsData
 End Function
 Function GetDBConnection() As Object
-    Dim pw As String, connectionString As String, dbConnection As Object
+    Dim pw As String, connectionString As String, dbConnection As Object, sDbName As String
     
     pw = "xlsysjs14"
-    'connectionString = "PROVIDER=Microsoft.Jet.OLEDB.4.0;DATA SOURCE=" & GetPref(9) & "XLReporting_JDE_Retail_DE.dat; Jet OLEDB:Database password=" & pw
+    sDbName = GetSQL("SELECT ParValue FROM XLControl WHERE Code = 'Database'")
+    connectionString = "PROVIDER=Microsoft.Jet.OLEDB.4.0;DATA SOURCE=" & GetPref(9) & sDbName & "; Jet OLEDB:Database password=" & pw
     Set dbConnection = CreateObject("ADODB.Connection")
     dbConnection.Open connectionString: dbConnection.Close
     Set GetDBConnection = dbConnection
