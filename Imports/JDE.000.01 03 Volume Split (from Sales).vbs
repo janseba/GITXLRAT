@@ -1,37 +1,36 @@
 Sub XLCode()
     Dim wks As Worksheet, row As Long, rs As Object, period As Integer, planVersion As String, periodFrom As String
     Dim connection As Object, country As String, startPeriod As Integer
-    Set wks = ActiveSheet
     planVersion = GetPar([A1], "Plan Version=")
     country = GetPar([A1], "Country=")
     periodFrom = GetSQL("SELECT FromPeriod FROM Sources WHERE Source = " & Quot(planVersion))
-If GetSQL("SELECT Locked FROM sources WHERE Source = " & Quot(planVersion)) = "y" Then
-    XLImp "ERROR", "The plan version has been locked for input": Exit Sub
-End If
+    If GetSQL("SELECT Locked FROM sources WHERE Source = " & Quot(planVersion)) = "y" Then
+        XLImp "ERROR", "The plan version has been locked for input": Exit Sub
+    End If
     Set rs = GetEmptyRecordSet("SELECT * FROM tblDistributionKeys WHERE PlanVersion IS NULL")
     startPeriod = CInt(Right(periodFrom, 2))
+        
+    For Each wks In ActiveWorkbook.Sheets
+        With wks
+            For row = 3 To wks.UsedRange.Rows.Count
+                If Not IsEmpty(.Cells(row, 5)) Then
+                    For period = startPeriod To 12
+                        If .Cells(row, period + 6) <> 0 Then
+                            rs.AddNew
+                            rs.Fields("PlanVersion") = planVersion
+                            rs.Fields("Period") = CLng(Left(periodFrom, 4)) * 100 + period
+                            rs.Fields("SKU") = Left(.Cells(row, 4), InStr(.Cells(row, 4), " |") - 1)
+                            rs.Fields("Customer") = .[C1]
+                            rs.Fields("VolumeSplit") = .Cells(row, period + 6)
+                        End If
+                    Next period
+                End If
+            Next row
+        End With
+    Next wks
     
-    With wks
-        For row = 3 To wks.UsedRange.Rows.Count
-            If Not IsEmpty(.Cells(row, 5)) Then
-                For period = startPeriod To 12
-                    If .Cells(row, period + 6) <> 0 Then
-                        rs.AddNew
-                        rs.Fields("PlanVersion") = planVersion
-                        rs.Fields("Period") = CLng(Left(periodFrom, 4)) * 100 + period
-                        rs.Fields("SKU") = Left(.Cells(row, 4), InStr(.Cells(row, 4), " |") - 1)
-                        rs.Fields("Customer") = .[C1]
-                        rs.Fields("VolumeSplit") = .Cells(row, period + 6)
-                    End If
-                Next period
-            End If
-        Next row
-    End With
-    
-    Dim salesCustomer As String
-    salesCustomer = wks.[D1]
     Set connection = GetDBConnection: connection.Open
-    connection.Execute "DELETE FROM tblDistributionKeys WHERE PlanVersion = " & Quot(planVersion) & " AND Customer = " & Quot(wks.[C1])
+    connection.Execute "DELETE FROM tblDistributionKeys WHERE PlanVersion = " & Quot(planVersion)
     rs.ActiveConnection = connection
     rs.UpdateBatch
     connection.Close
