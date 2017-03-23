@@ -12,26 +12,26 @@ End If
     startPeriod = CInt(Right(periodFrom, 2))
     
     With wks
-        For row = 2 To wks.UsedRange.Rows.Count
+        For row = 3 To wks.UsedRange.Rows.Count
             If Not IsEmpty(.Cells(row, 5)) Then
                 For period = startPeriod To 12
-                    If .Cells(row, period + 20) <> 0 Then
+                    If .Cells(row, period + 6) <> 0 Then
                         rs.AddNew
                         rs.Fields("PlanVersion") = planVersion
                         rs.Fields("Period") = CLng(Left(periodFrom, 4)) * 100 + period
-                        rs.Fields("SKU") = LEFT(.Cells(row, 4),InStr(.Cells(row,4)," |") - 1)
-                        rs.Fields("PlanningCustomer") = .[C1]
+                        rs.Fields("SKU") = Left(.Cells(row, 4), InStr(.Cells(row, 4), " |") - 1)
+                        rs.Fields("Customer") = .[C1]
                         rs.Fields("VolumeSplit") = .Cells(row, period + 6)
                     End If
                 Next period
             End If
         Next row
     End With
-	
-	Dim salesCustomer As String
-	salesCustomer = wks.[D1]
+    
+    Dim salesCustomer As String
+    salesCustomer = wks.[D1]
     Set connection = GetDBConnection: connection.Open
-    connection.Execute "DELETE FROM tblDistributionKeys WHERE PlanVersion = " & Quot(planVersion) & " AND PlanningCustomer = " & Quot(wks.[C1])
+    connection.Execute "DELETE FROM tblDistributionKeys WHERE PlanVersion = " & Quot(planVersion) & " AND Customer = " & Quot(wks.[C1])
     rs.ActiveConnection = connection
     rs.UpdateBatch
     connection.Close
