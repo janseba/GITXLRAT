@@ -7,7 +7,7 @@ Sub XLCode()
     periodFrom = GetPar([A1], "Period From=")
     periodTo = GetPar([A1], "Period To=")
     startPeriod = CInt(Right(periodFrom, 2))
-    endPeriod = CInt(Right(periodTo,2))
+    endPeriod = CInt(Right(periodTo, 2))
 If GetSQL("SELECT Locked FROM sources WHERE Source = " & Quot(planVersion)) = "y" Then
     XLImp "ERROR", "The plan version has been locked for input": Exit Sub
 End If
@@ -24,7 +24,7 @@ End If
                         rs.Fields("Country") = country
                         rs.Fields("PlanVersion") = planVersion
                         rs.Fields("Period") = CLng(Left(periodFrom, 4)) * 100 + period
-                        rs.Fields("SourceType") = "APActual"
+                        rs.Fields("SourceType") = "AOP17"
                         rs.Fields("Forecast") = "no"
                         rs.Fields("sku") = .Cells(row, 5)
                         rs.Fields("Customer") = .[D1]
