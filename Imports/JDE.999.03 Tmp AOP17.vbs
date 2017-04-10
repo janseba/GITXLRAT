@@ -1,55 +1,52 @@
 Sub XLCode()
     Dim wks As Worksheet, row As Long, rs As Object, planVersion As String, period As String
-    Dim connection As Object, country As String, bladen As Variant, sht As Variant, col as Long
+    Dim connection As Object, country As String, bladen As Variant, sht As Variant, col As Long
 
     planVersion = GetPar([A1], "Plan Version=")
     country = GetPar([A1], "Country=")
-If GetSQL("SELECT Locked FROM sources WHERE Source = " & Quot(planVersion)) = "y" Then
-    XLImp "ERROR", "The plan version has been locked for input": Exit Sub
-End If
+    If GetSQL("SELECT Locked FROM sources WHERE Source = " & Quot(planVersion)) = "y" Then
+        XLImp "ERROR", "The plan version has been locked for input": Exit Sub
+    End If
 
     Set rs = GetEmptyRecordSet("SELECT * FROM tblFactsAOP WHERE PlanVersion IS NULL")
 
     Set wks = ActiveSheet
 
     With wks
-        For row = 14 To wks.UsedRange.Rows.Count
-            For col = 6 to wks.UsedRange.Columns.Count
-                If Not IsEmpty(.Cells(row, 3)) And Not IsEmpty(.Cells(5, col)) And .Cells(row,col) <> 0 Then
+        For row = 2 To wks.UsedRange.Rows.Count
+            For col = 8 To 19
+                If Not IsEmpty(.Cells(row, 5)) And .Cells(row, col) <> 0 Then
                     rs.AddNew
                     rs.Fields("Country") = country
                     rs.Fields("PlanVersion") = planVersion
-                    rs.Fields("Period") = .Cells(5, col)
-                    rs.Fields("SourceType") = "AOP16"
+                    rs.Fields("Period") = Left(.Cells(1, col), 4) & Right(.Cells(1, col), 2)
+                    rs.Fields("SourceType") = "AOP17"
                     rs.Fields("Forecast") = "yes"
-                    rs.Fields("SKU") = .Cells(row, 3)
-                    rs.Fields("Customer") =  .Cells(1, col)
+                    rs.Fields("SKU") = .Cells(row, 6)
+                    rs.Fields("Customer") = .Cells(row, 7)
                     rs.Fields("PromoNonPromo") = "NonPromo"
                     rs.Fields("OnOffInvoice") = ""
-                    if .Cells(2,col) = "Volume" Then
-                        rs.Fields("Volume") = .Cells(row, col)
-                    ElseIf .Cells(2, col) = "FAP1" Then
-                        rs.Fields("FAP1") = .Cells(row, col)
-                    ElseIf .Cells(2,col) = "Discount2Fix" Then
-                        rs.Fields("Discount2Fix") = -1 * .Cells(row, col)
-                    ElseIf .Cells(2, col) = "COGS" Then
-                        rs.Fields("MB") = -1 * .Cells(row, col)
-                    End If
+                    rs.Fields(CStr(.Cells(row, 5))) = .Cells(row, col)
                 End If
             Next col
         Next row
     End With
     Set connection = GetDBConnection: connection.Open
-    connection.Execute "DELETE FROM tblFactsAOP WHERE SourceType = 'AOP16' AND PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country)
-    connection.Execute "DELETE FROM tblFacts WHERE SourceType = 'AOP16' AND PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country)
+    connection.Execute "DELETE FROM tblFactsAOP WHERE SourceType = 'AOP17' AND PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country)
+    connection.Execute "DELETE FROM tblFacts WHERE SourceType = 'AOP17' AND PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country)
     rs.ActiveConnection = connection
     rs.UpdateBatch
+    Application.Wait DateAdd("s", 1, Now) 'Wait for 1 second
     XLImp "SELECT COUNT(code) FROM Companies", rs.RecordCount & " lines were added to database in 1 batch update"
-    XLIMP "INSERT INTO tblFacts(Country, PlanVersion, Period, SourceType, Forecast, SKU, Customer, PromoNonPromo, OnOffInvoice, Volume, FAP1, Discount2Fix, MB) " & _
-		"SELECT Country, PlanVersion, Period, SourceType, Forecast, SKU, Customer, PromoNonPromo, OnOffInvoice, SUM(Volume), SUM(FAP1), SUM(Discount2Fix), SUM(MB) " & _
-		"FROM tblFactsAOP " & _
-		"WHERE PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country) & _
-		" GROUP BY Country, PlanVersion, Period, SourceType, Forecast, SKU, Customer, PromoNonPromo, OnOffInvoice", "Insert AOP in database"
+    XLImp "INSERT INTO tblFacts(Country, PlanVersion, Period, SourceType, Forecast, SKU, Customer, PromoNonPromo, OnOffInvoice, " & _
+        "Volume, FAP1, [14_3TermofPayment], lpa, discount2eur, discount4eur, discount3eur, [107_TABDFOffinvTAS], [17_1OneListFee], discount5eur, " & _
+        "discount2fix, mb, DisplayCosts, ecoTax) " & _
+        "SELECT Country, PlanVersion, Period, SourceType, Forecast, SKU, Customer, PromoNonPromo, OnOffInvoice, SUM(Volume), SUM(FAP1)" & _
+        ", -SUM(14_3TermofPayment), -SUM(lpa), -SUM(discount2eur), -SUM(discount4eur), -SUM(discount3eur), -SUM([107_TABDFOffinvTAS]), -SUM([17_1OneListFee])" & _
+        ", -SUM(discount5eur), -SUM(discount2fix), -SUM(mb) + SUM(DisplayCosts), -SUM(DisplayCosts), -Sum(ecoTax)" & _
+        "FROM tblFactsAOP " & _
+        "WHERE PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country) & _
+        " GROUP BY Country, PlanVersion, Period, SourceType, Forecast, SKU, Customer, PromoNonPromo, OnOffInvoice", "Insert AOP in database"
     connection.Close
 End Sub
 Function GetEmptyRecordSet(ByVal sTable As String) As Object
@@ -79,5 +76,3 @@ Function GetDBConnection() As Object
     dbConnection.Open connectionString: dbConnection.Close
     Set GetDBConnection = dbConnection
 End Function
-
-
