@@ -10,27 +10,31 @@ Sub XLCode()
 
     Set rs = GetEmptyRecordSet("SELECT * FROM tblFactsAOP WHERE PlanVersion IS NULL")
 
-    Set wks = ActiveSheet
+    For Each wks In ActiveWorkbook.Worksheets
 
-    With wks
-        For row = 2 To wks.UsedRange.Rows.Count
-            For col = 8 To 19
-                If Not IsEmpty(.Cells(row, 5)) And .Cells(row, col) <> 0 Then
-                    rs.AddNew
-                    rs.Fields("Country") = country
-                    rs.Fields("PlanVersion") = planVersion
-                    rs.Fields("Period") = Left(.Cells(1, col), 4) & Right(.Cells(1, col), 2)
-                    rs.Fields("SourceType") = "AOP17"
-                    rs.Fields("Forecast") = "yes"
-                    rs.Fields("SKU") = .Cells(row, 6)
-                    rs.Fields("Customer") = .Cells(row, 7)
-                    rs.Fields("PromoNonPromo") = "NonPromo"
-                    rs.Fields("OnOffInvoice") = ""
-                    rs.Fields(CStr(.Cells(row, 5))) = .Cells(row, col)
-                End If
-            Next col
-        Next row
-    End With
+        With wks
+            If Left(.Name, 16) = "Import-File_XLR-" Then
+                For row = 2 To wks.UsedRange.Rows.Count
+                    For col = 6 To 17
+                        If Not IsEmpty(.Cells(row, 3)) And .Cells(row, col) <> 0 Then
+                            rs.AddNew
+                            rs.Fields("Country") = country
+                            rs.Fields("PlanVersion") = planVersion
+                            rs.Fields("Period") = Left(.Cells(1, col), 4) & Right(.Cells(1, col), 2)
+                            rs.Fields("SourceType") = "AOP17"
+                            rs.Fields("Forecast") = "yes"
+                            rs.Fields("SKU") = .Cells(row, 4)
+                            rs.Fields("Customer") = .Cells(row, 5)
+                            rs.Fields("PromoNonPromo") = "NonPromo"
+                            rs.Fields("OnOffInvoice") = ""
+                            rs.Fields(CStr(.Cells(row, 3))) = .Cells(row, col)
+                        End If
+                    Next col
+                Next row
+            End If
+        End With
+    Next wks
+    
     Set connection = GetDBConnection: connection.Open
     connection.Execute "DELETE FROM tblFactsAOP WHERE SourceType = 'AOP17' AND PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country)
     connection.Execute "DELETE FROM tblFacts WHERE SourceType = 'AOP17' AND PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country)
@@ -42,7 +46,7 @@ Sub XLCode()
         "Volume, FAP1, [14_3TermofPayment], lpa, discount2eur, discount4eur, discount3eur, [107_TABDFOffinvTAS], [17_1OneListFee], discount5eur, " & _
         "discount2fix, mb, DisplayCosts, ecoTax) " & _
         "SELECT Country, PlanVersion, Period, SourceType, Forecast, SKU, Customer, PromoNonPromo, OnOffInvoice, SUM(Volume), SUM(FAP1)" & _
-        ", -SUM(14_3TermofPayment), -SUM(lpa), -SUM(discount2eur), -SUM(discount4eur), -SUM(discount3eur), -SUM([107_TABDFOffinvTAS]), -SUM([17_1OneListFee])" & _
+        ", -SUM([14_3TermofPayment]), -SUM(lpa), -SUM(discount2eur), -SUM(discount4eur), -SUM(discount3eur), -SUM([107_TABDFOffinvTAS]), -SUM([17_1OneListFee])" & _
         ", -SUM(discount5eur), -SUM(discount2fix), -SUM(mb) + SUM(DisplayCosts), -SUM(DisplayCosts), -Sum(ecoTax)" & _
         "FROM tblFactsAOP " & _
         "WHERE PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country) & _
@@ -76,3 +80,4 @@ Function GetDBConnection() As Object
     dbConnection.Open connectionString: dbConnection.Close
     Set GetDBConnection = dbConnection
 End Function
+
