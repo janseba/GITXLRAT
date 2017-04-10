@@ -24,8 +24,8 @@ End If
                         rs.Fields("Country") = country
                         rs.Fields("PlanVersion") = planVersion
                         rs.Fields("Period") = CLng(Left(periodFrom, 4)) * 100 + period
-                        rs.Fields("SourceType") = "AOP17"
-                        rs.Fields("Forecast") = "no"
+                        rs.Fields("SourceType") = "A&P AOP17"
+                        rs.Fields("Forecast") = "yes"
                         rs.Fields("sku") = .Cells(row, 5)
                         rs.Fields("Customer") = .[D1]
                         rs.Fields("PromoNonPromo") = "NonPromo"
@@ -45,7 +45,7 @@ End If
     End With
 
     Set connection = GetDBConnection: connection.Open
-    connection.Execute "DELETE FROM tblFacts WHERE SourceType = 'APActual' AND PlanVersion = " & Quot(planVersion) & " AND Country = " & _
+    connection.Execute "DELETE FROM tblFacts WHERE SourceType = 'A&P AOP17' AND PlanVersion = " & Quot(planVersion) & " AND Country = " & _
         Quot(country) & " AND Period BETWEEN " & Quot(periodFrom) & " AND " & Quot(periodTo)
     rs.ActiveConnection = connection
     rs.UpdateBatch

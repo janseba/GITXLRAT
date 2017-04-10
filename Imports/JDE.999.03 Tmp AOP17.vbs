@@ -21,7 +21,7 @@ Sub XLCode()
                             rs.Fields("Country") = country
                             rs.Fields("PlanVersion") = planVersion
                             rs.Fields("Period") = Left(.Cells(1, col), 4) & Right(.Cells(1, col), 2)
-                            rs.Fields("SourceType") = "AOP17"
+                            rs.Fields("SourceType") = "GP AOP17"
                             rs.Fields("Forecast") = "yes"
                             rs.Fields("SKU") = .Cells(row, 4)
                             rs.Fields("Customer") = .Cells(row, 5)
@@ -36,18 +36,18 @@ Sub XLCode()
     Next wks
     
     Set connection = GetDBConnection: connection.Open
-    connection.Execute "DELETE FROM tblFactsAOP WHERE SourceType = 'AOP17' AND PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country)
-    connection.Execute "DELETE FROM tblFacts WHERE SourceType = 'AOP17' AND PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country)
+    connection.Execute "DELETE FROM tblFactsAOP WHERE SourceType = 'GP AOP17' AND PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country)
+    connection.Execute "DELETE FROM tblFacts WHERE SourceType = 'GP AOP17' AND PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country)
     rs.ActiveConnection = connection
     rs.UpdateBatch
-    Application.Wait DateAdd("s", 1, Now) 'Wait for 1 second
+    Application.Wait DateAdd("s", 5, Now) 'Wait for 1 second
     XLImp "SELECT COUNT(code) FROM Companies", rs.RecordCount & " lines were added to database in 1 batch update"
     XLImp "INSERT INTO tblFacts(Country, PlanVersion, Period, SourceType, Forecast, SKU, Customer, PromoNonPromo, OnOffInvoice, " & _
-        "Volume, FAP1, [14_3TermofPayment], lpa, discount2eur, discount4eur, discount3eur, [107_TABDFOffinvTAS], [17_1OneListFee], discount5eur, " & _
+        "Volume, FAP1, [14_3TermofPayment], lpa, discount1eur, discount4eur, discount3eur, [107_TABDFOffinvTAS], [17_1OneListFee], discount5eur, " & _
         "discount2fix, mb, DisplayCosts, ecoTax) " & _
         "SELECT Country, PlanVersion, Period, SourceType, Forecast, SKU, Customer, PromoNonPromo, OnOffInvoice, SUM(Volume), SUM(FAP1)" & _
-        ", -SUM([14_3TermofPayment]), -SUM(lpa), -SUM(discount2eur), -SUM(discount4eur), -SUM(discount3eur), -SUM([107_TABDFOffinvTAS]), -SUM([17_1OneListFee])" & _
-        ", -SUM(discount5eur), -SUM(discount2fix), -SUM(mb) + SUM(DisplayCosts), -SUM(DisplayCosts), -Sum(ecoTax)" & _
+        ", -SUM([14_3TermofPayment]), -SUM(lpa), -SUM(discount1eur), -SUM(discount4eur), -SUM(discount3eur), -SUM([107_TABDFOffinvTAS]), -SUM([17_1OneListFee])" & _
+        ", SUM(discount5eur), -SUM(discount2fix), -SUM(mb) + SUM(DisplayCosts), -SUM(DisplayCosts), -Sum(ecoTax)" & _
         "FROM tblFactsAOP " & _
         "WHERE PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country) & _
         " GROUP BY Country, PlanVersion, Period, SourceType, Forecast, SKU, Customer, PromoNonPromo, OnOffInvoice", "Insert AOP in database"

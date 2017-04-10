@@ -8,7 +8,6 @@ SELECT a.PlanVersion,
        b.Prdha3,
        b.Prdha2,
        b.Prdha1,
-       b.PromotionalSKU,
        b.ProfitCenter,
        b.Brand,
        b.BridgeHierarchy,
@@ -19,8 +18,6 @@ SELECT a.PlanVersion,
        a.PromoNonPromo,
        a.OnOffInvoice,
        SUM(a.Volume) AS Volume,
-       SUM(a.VolPromo) AS VolPromo,
-       SUM(a.VolNonPromo) AS VolNonPromo,
        SUM(a.Ebit) AS Ebit,
        SUM(a.OSA) AS OSA,
        SUM(a.CM) AS CM,
@@ -43,7 +40,8 @@ SELECT a.PlanVersion,
        SUM(a.CostOfGoodsExclCT) AS COGS,
        SUM(a.TotDisplayCosts) AS DisplayCosts,
        SUM(a.TotMB) AS MB,
-       SUM(a.TotGreendot) AS Greendot
+       SUM(a.TotGreendot) AS Greendot,
+       SUM(a.[17_1OneListFee]) AS ListingFees
 FROM (view_facts AS a
       LEFT JOIN tblSKU AS b ON a.SKU = b.SKU)
 LEFT JOIN tblCustomer AS c ON a.Customer = c.Customer
@@ -57,7 +55,6 @@ GROUP BY a.PlanVersion,
          b.Prdha3,
          b.Prdha2,
          b.Prdha1,
-         b.PromotionalSKU,
          b.ProfitCenter,
          b.Brand,
          b.BridgeHierarchy,
@@ -66,4 +63,5 @@ GROUP BY a.PlanVersion,
          c.CustomerName,
          c.PlanningCustomer,
          a.PromoNonPromo,
-         a.OnOffInvoice
+         a.OnOffInvoice;
+
