@@ -1,6 +1,7 @@
 Sub XLCode()
     Dim template As String, wkbTemplate As Workbook, wksData As Worksheet, wksTemplate As Worksheet, sql As String, customers As Variant
     Dim wkbReport As Workbook, volumeSales As Object, planversion As String, pos As Long, period As Integer, sPeriodFrom As String, n As name
+    Dim wks As Worksheet, c As Range, proposeSplit As String
 
     'Switch of automatic calculation
     Application.Calculation = xlCalculationManual
@@ -9,9 +10,14 @@ Sub XLCode()
     Set wkbReport = ActiveWorkbook
     planversion = GetPar(wksData.[A2], "Plan Version=")
     sPeriodFrom = GetSQL("SELECT FromPeriod FROM Sources WHERE Source = " & Quot(planversion))
-    
+    proposeSplit = GetPar(wksData.[A2], "Propose Split ?=")
+
+    DoEvents: Application.StatusBar = "Get sales volume"
     AddDataSheets "SalesVolume", "SELECT * FROM tblVolumeSales WHERE PlanVersion = " & Quot(planversion), wksData.name
+    DoEvents: Application.StatusBar = "Get new distribution keys"
     AddDataSheets "DistributionKeys", "SELECT * FROM View_VolumeDistributionKeys WHERE PlanVersion = " & Quot(planversion), wksData.name
+    DoEvents: Application.StatusBar = "Get previous distribution keys"
+    AddDataSheets "SDK", "SELECT * FROM tblDistributionKeys WHERE PlanVersion = " & Quot(planversion), wksData.name
         
     'Add a template for every customer
     template = GetPref(9) & "Templates\TemplateVolume.xlsx"
@@ -19,6 +25,14 @@ Sub XLCode()
     wkbTemplate.Sheets("Volume").Move Before:=wksData
     Set wksTemplate = ActiveWorkbook.Sheets("Volume")
     wksTemplate.[A2] = Left(sPeriodFrom, 4)
+    wksTemplate.[A3] = proposeSplit
+    For Each c In wksTemplate.Range("rngSalesVolumeBody")
+        c.Formula = c.Formula
+    Next c
+    
+    For Each c In wksTemplate.Range("rngSplitBody")
+        c.Formula = c.Formula
+    Next c
            
     'Get planningCategories
     Dim planningCategories As Object
@@ -51,6 +65,7 @@ Sub XLCode()
         wksTemplate.Names.Add "C_" & CleanName(planningCategories.Fields("SalesPlanning")), wksTemplate.Names("rngCategory").RefersToRange.Offset((planningCategories.AbsolutePosition - 1) * 6)
         Set rngCategory = wksTemplate.Names("C_" & CleanName(planningCategories.Fields("SalesPlanning"))).RefersToRange
         wksTemplate.Names.Add "B_" & CleanName(planningCategories.Fields("SalesPlanning")), rngCategory.Offset(1, 2).Resize(rngCategory.Rows.Count - 3, rngCategory.Columns.Count - 2)
+        'rngCategory.Offset(1, 3).Resize(rngCategory.Rows.Count - 3, rngCategory.Columns.Count - 3).FormulaR1C1 = "= SUMIFS(SDK.VolumeSplit,SDK.AlternativeSKU,RC1,SDK.Customer,R1C1,SDK.Period,R2C1 & RIGHT(R9C,2))"
         rngCategory.Cells(1, 1) = planningCategories.Fields("SalesPlanning")
         planningCategories.MoveNext
     Loop
@@ -83,23 +98,34 @@ Sub XLCode()
     sql = "SELECT DISTINCT Customer, CustomerName FROM tblCustomer WHERE PlanningCustomer IS NOT NULL"
     Set customers = GetRecordSet(sql)
     
-    sql = "SELECT * FROM tblVolumeSales WHERE PlanVersion = " & Quot(planversion)
-    Set volumeSales = GetRecordSet(sql)
+    'sql = "SELECT * FROM tblVolumeSales WHERE PlanVersion = " & Quot(planversion)
+    'Set volumeSales = GetRecordSet(sql)
+    
     customers.MoveFirst
     Do Until customers.EOF
+        Application.StatusBar = customers.Fields("CustomerName")
+        DoEvents
         wkbReport.Sheets("Volume").Copy Before:=wksData
-        ActiveSheet.name = CleanName(customers.Fields("CustomerName"))
+        ActiveSheet.name = "C_" & CleanName(customers.Fields("CustomerName"))
         ActiveSheet.[A1] = customers.Fields("Customer")
-        Application.Calculate
-        ActiveSheet.Range("rngSalesVolumeBody").Copy: ActiveSheet.Range("rngSalesVolumeBody").PasteSpecial xlPasteValues
-        For Each n In ActiveSheet.Names
-            If InStr(n.name, "B_") > 0 Then
-                n.RefersToRange.Copy
-                n.RefersToRange.PasteSpecial xlPasteValues
-            End If
-        Next n
         customers.MoveNext
     Loop
+    
+    Debug.Print "Start " & Now
+    Application.Calculate
+    Debug.Print "Stop " & Now
+    
+    For Each wks In wkbReport.Sheets
+        If Left(wks.name, 2) = "C_" Then
+            wks.Range("rngSalesVolumeBody").Copy: wks.Range("rngSalesVolumeBody").PasteSpecial xlPasteValues
+            For Each n In wks.Names
+                If InStr(n.name, "B_") > 0 Then
+                    n.RefersToRange.Value = n.RefersToRange.Value
+                End If
+            Next n
+        End If
+    Next wks
+
     Application.DisplayAlerts = False
     wkbReport.Sheets("Volume").Delete
     wksData.Visible = xlSheetHidden
@@ -107,12 +133,12 @@ Sub XLCode()
     wkbReport.Sheets("SalesVolume").Delete
     Application.DisplayAlerts = True
     Application.Calculation = xlCalculationAutomatic
+    Application.StatusBar = False
     
     Exit Sub
     
     'Get reference volume
-    Dim volumeDistribution As Object, j As Integer, proposeSplit As String, customer As String
-    proposeSplit = GetPar(wksData.[A2], "Propose Split ?=")
+    Dim volumeDistribution As Object, j As Integer, customer As String
     wksTemplate.[B1] = customer
     sql = "SELECT SKUs,Volume,SegmentTotal FROM View_VolumeDistribution WHERE PlanningCustomer =" & Quot(customer) & " AND" & Quot(planversion)
     Set volumeDistribution = GetRecordSet(sql)
@@ -145,7 +171,7 @@ Sub XLCode()
     End If
     
     'Check if split adds up to 100%, only by initial split
-    Dim c As Range, splitTotal As Double, maxSplitRow As Integer, maxSplit As Double, row As Integer
+    Dim splitTotal As Double, maxSplitRow As Integer, maxSplit As Double, row As Integer
     If proposeSplit = "yes" Then
         planningCategories.MoveFirst
         Do Until planningCategories.EOF

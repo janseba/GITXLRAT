@@ -21,6 +21,7 @@ Sub XLCode()
                                 rs.Fields("PlanVersion") = planVersion
                                 rs.Fields("Period") = CLng(Left(periodFrom, 4)) * 100 + period
                                 rs.Fields("SKU") = Left(.Cells(row, 2), InStr(.Cells(row, 2), " |") - 1)
+                                rs.Fields("AlternativeSKU") = .Cells(row, 1)
                                 rs.Fields("Customer") = .[A1]
                                 rs.Fields("VolumeSplit") = .Cells(row, period + 4)
                             End If
