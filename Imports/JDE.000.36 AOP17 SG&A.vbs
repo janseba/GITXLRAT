@@ -1,7 +1,7 @@
 Sub XLCode()
     Dim row As Long, rs As Object, period As Integer, planVersion As String, periodFrom As String, periodTo As String
     Dim connection As Object, country As String, startPeriod As Integer, endPeriod As Integer, rngInput As Range
-    Dim vSGACategory As Variant, vSGAField As Variant, colSGA As Collection, i As Integer
+    Dim vSGACategory As Variant, vSGAField As Variant, colSGA As Collection, i As Integer, sSku As String, sCustomer As String
     
     vSGACategory = Array("Selling - Field", "Selling - Office", "Marketing", "Research & Development expenses", "Central design expenses" _
         , "Finance expenses", "Strategy expenses", "Human resources expenses", "Communication expenses", "IT expenses" _
@@ -24,6 +24,8 @@ Sub XLCode()
     Set rs = GetEmptyRecordSet("SELECT * FROM tblFacts WHERE PlanVersion IS NULL")
 
     Set rngInput = Range("XLRInput")
+    sSku = Range("XLRsku").Value
+    sCustomer = Range("XLRCustomer").Value
 
     With rngInput
         For row = 3 To .Rows.Count
@@ -36,14 +38,10 @@ Sub XLCode()
                         rs.Fields("Period") = CLng(Left(periodFrom, 4)) * 100 + period
                         rs.Fields("SourceType") = "AOPSGA"
                         rs.Fields("Forecast") = "yes"
-                        rs.Fields("sku") = .Cells(row, 5)
-                        rs.Fields("Customer") = .[D1]
+                        rs.Fields("sku") = sSku
+                        rs.Fields("Customer") = sCustomer
                         rs.Fields("PromoNonPromo") = "NonPromo"
-                        If .Cells(row, 4) = "Selling" Then
-                            rs.Fields("Selling") = -1 * IIf(IsError(.Cells(row, period + 5)), 0, .Cells(row, period + 5))
-                        ElseIf .Cells(row, 4) = "Other G&A" Then
-                            rs.Fields("OtherGA") = -1 * IIf(IsError(.Cells(row, period + 5)), 0, .Cells(row, period + 5))
-                        End If
+                        rs.Fields(colSGA(.Cells(row, 1))) = -.Cells(row, period + 1)
                     End If
                 Next period
             End If
