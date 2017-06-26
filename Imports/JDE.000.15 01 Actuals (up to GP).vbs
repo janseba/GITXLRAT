@@ -116,16 +116,16 @@ End If
       "AND b.Type = 'SKU' AND a.PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country) & " AND Period = " & Quot(period), "correct volume of dsiplay SKUs"
     XLImp "DELETE FROM tblFacts WHERE SourceType = 'DsplCOGS' AND Forecast = 'no' AND PlanVersion = " & Quot(planVersion) & " AND Country = " & Quot(country) & _
       " AND Period = " & Quot(period)
-    XLImp "INSERT INTO tblFacts(Country, PlanVersion, Period, SourceType, Forecast, SKU, Customer, PromoNonPromo, OnOffInvoice, VolumeType, CostOfSales, GreenDot, DisplayCosts) " & _
+    XLImp "INSERT INTO tblFacts(Country, PlanVersion, Period, SourceType, Forecast, SKU, Customer, PromoNonPromo, OnOffInvoice, VolumeType, CostOfSales, DisplayCosts) " & _
       "SELECT a.Country, a.PlanVersion, a.Period, 'DsplCOGS', a.Forecast, a.SKU, a.Customer, a.PromoNonPromo, a.OnOffInvoice, a.VolumeType, " & _
-      "IIf(c.VolFact = 0, 0, a.Volume / c.VolFact) * c.COGSFact AS COGSAdj, IIf(c.VolFact = 0, 0, a.Volume / c.VolFact) * c.EcoFact AS EcoAdj, IIf(c.VolFact = 0, 0, a.Volume / c.VolFact) * c.DisplayFact " & _
+      "IIf(c.VolFact = 0, 0, a.Volume / c.VolFact) * c.COGSFact AS COGSAdj, IIf(c.VolFact = 0, 0, a.Volume / c.VolFact) * c.DisplayFact " & _
       "FROM (tblFacts AS a LEFT JOIN tblMixedDisplays AS b ON a.SKU = b.SKU) LEFT JOIN " & _
-      "(SELECT PlanVersion, Period, SKU, Customer, IIf(ISNULL(SUM(Volume)), 0, SUM(Volume)) AS VolFact, IIf(ISNULL(SUM(CostOfSales)), 0, SUM(CostOfSales)) AS COGSFact, IIf(ISNULL(SUM(GreenDot)), 0, SUM(GreenDot)) AS EcoFact, IIf(ISNULL(SUM(DisplayCosts)), 0, SUM(DisplayCosts)) AS DisplayFact " & _
+      "(SELECT PlanVersion, Period, SKU, Customer, IIf(ISNULL(SUM(Volume)), 0, SUM(Volume)) AS VolFact, IIf(ISNULL(SUM(CostOfSales)), 0, SUM(CostOfSales)) AS COGSFact, IIf(ISNULL(SUM(DisplayCosts)), 0, SUM(DisplayCosts)) AS DisplayFact " & _
       "FROM tblFacts WHERE SourceType <> 'DisplayCor' GROUP BY PlanVersion, Period, SKU, Customer) AS c " & _
       "ON a.PlanVersion = c.PlanVersion AND a.Period = c.Period AND a.SKU = c.SKU AND a.Customer = c.Customer " & _
       "WHERE b.Type <> 'Display' AND a.SourceType = 'DisplayCor' AND a.PlanVersion = " & Quot(planVersion) & " AND a.Country = " & Quot(country) & " AND a.Period = " & Quot(period), "correct cogs of skus in case of display"
-    XLImp "INSERT INTO tblFacts(Country, PlanVersion, Period, SourceType, Forecast, SKU, Customer, PromoNonPromo, OnOffInvoice, VolumeType, CostOfSales, GreenDot, DisplayCosts) " & _
-      "SELECT a.Country, a.PlanVersion, a.Period, 'DsplCOGS', a.Forecast, b.DisplaySKU, a.Customer, a.PromoNonPromo, a.OnOffInvoice, a.VolumeType, - 1 * a.CostOfSales, - 1 * a.GreenDot, - 1 * a.DisplayCosts " & _
+    XLImp "INSERT INTO tblFacts(Country, PlanVersion, Period, SourceType, Forecast, SKU, Customer, PromoNonPromo, OnOffInvoice, VolumeType, CostOfSales, DisplayCosts) " & _
+      "SELECT a.Country, a.PlanVersion, a.Period, 'DsplCOGS', a.Forecast, b.DisplaySKU, a.Customer, a.PromoNonPromo, a.OnOffInvoice, a.VolumeType, - 1 * a.CostOfSales, - 1 * a.DisplayCosts " & _
       "FROM tblFacts AS a INNER JOIN tblMixedDisplays AS b ON a.SKU = b.SKU WHERE a.SourceType = 'DsplCOGS' AND a.PlanVersion = " & Quot(planVersion) & " AND a.Country = " & Quot(country) & " AND a.Period = " & Quot(period), "correct cogs of skus in case of display"
     connection.Close 
 End Sub
@@ -156,4 +156,3 @@ Function GetDBConnection() As Object
     dbConnection.Open connectionString: dbConnection.Close
     Set GetDBConnection = dbConnection
 End Function
-
