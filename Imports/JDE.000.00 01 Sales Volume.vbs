@@ -59,7 +59,7 @@ Function GetDBConnection() As Object
     
     pw = "xlsysjs14"
     sDbName = GetSQL("SELECT ParValue FROM XLControl WHERE Code = 'Database'")
-    'connectionString = "PROVIDER=Microsoft.Jet.OLEDB.4.0;DATA SOURCE=" & GetPref(9) & sDbName & "; Jet OLEDB:Database password=" & pw
+    connectionString = "PROVIDER=Microsoft.Jet.OLEDB.4.0;DATA SOURCE=" & GetPref(9) & sDbName & "; Jet OLEDB:Database password=" & pw
     Set dbConnection = CreateObject("ADODB.Connection")
     dbConnection.Open connectionString: dbConnection.Close
     Set GetDBConnection = dbConnection
