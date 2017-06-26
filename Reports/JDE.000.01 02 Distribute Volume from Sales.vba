@@ -36,7 +36,7 @@ Sub XLCode()
            
     'Get planningCategories
     Dim planningCategories As Object
-    sql = "SELECT DISTINCT SalesPlanning FROM tblSKU WHERE SalesPlanning IS NOT NULL AND Active = 'yes'"
+    sql = "SELECT SalesPlanning FROM tblSKU WHERE Active = 'yes' GROUP BY SalesPlanning, SortOrder ORDER BY SortOrder"
     Set planningCategories = GetRecordSet(sql)
     
     'Fill summarytable
