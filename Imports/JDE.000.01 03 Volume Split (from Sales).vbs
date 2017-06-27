@@ -27,18 +27,20 @@ Sub XLCode()
                                 rs.Fields("AlternativeSKU") = .Cells(row, 1)
                                 rs.Fields("Customer") = .[A1]
                                 rs.Fields("VolumeSplit") = .Cells(row, period + 4)
-                                rsFacts.AddNew
-                                rsFacts.Fields("Country") = "AT"
-                                rsFacts.Fields("PlanVersion") = planVersion
-                                rsFacts.Fields("Period") = CLng(Left(periodFrom, 4)) * 100 + period
-                                rsFacts.Fields("SourceType") = "FCVolume"
-                                rsFacts.Fields("Forecast") = "yes"
-                                rsFacts.Fields("SKU") = Left(.Cells(row, 2), InStr(.Cells(row, 2), " |") - 1)
-                                rsFacts.Fields("Customer") = .[A1]
-                                rsFacts.Fields("PromoNonPromo") = "NonPromo"
-                                rsFacts.Fields("OnOffInvoice") = "On"
-                                If IsTonLtr(rsFacts.Fields("SKU"), rsTonLtr) Then rsFacts.Fields("VolumeType") = "TonLtr" Else rsFacts.Fields("VolumeType") = "Ton"
-                                rsFacts.Fields("Volume") = .Cells(row, period + 18)
+                                If .Cells(row, period + 18) <> 0 Then
+                                    rsFacts.AddNew
+                                    rsFacts.Fields("Country") = "AT"
+                                    rsFacts.Fields("PlanVersion") = planVersion
+                                    rsFacts.Fields("Period") = CLng(Left(periodFrom, 4)) * 100 + period
+                                    rsFacts.Fields("SourceType") = "FCVolume"
+                                    rsFacts.Fields("Forecast") = "yes"
+                                    rsFacts.Fields("SKU") = Left(.Cells(row, 2), InStr(.Cells(row, 2), " |") - 1)
+                                    rsFacts.Fields("Customer") = .[A1]
+                                    rsFacts.Fields("PromoNonPromo") = "NonPromo"
+                                    rsFacts.Fields("OnOffInvoice") = "On"
+                                    If IsTonLtr(rsFacts.Fields("SKU"), rsTonLtr) Then rsFacts.Fields("VolumeType") = "TonLtr" Else rsFacts.Fields("VolumeType") = "Ton"
+                                    rsFacts.Fields("Volume") = .Cells(row, period + 18)
+                                End If
                             End If
                         Next period
                     End If
