@@ -1,7 +1,7 @@
 Sub XLCode()
     Dim wks As Worksheet, row As Long, rs As Object, period As Integer, planVersion As String, periodFrom As String
     Dim connection As Object, country As String, startPeriod As Integer, wksData As Worksheet, rsTonLtr As Object
-    Dim rsFacts As Object
+    Dim rsFacts As Object, sql As String
     Set wksData = Worksheets("XLRep 02 Distribute Volume fro")
     planVersion = GetPar(wksData.[A1], "Plan Version=")
     periodFrom = GetSQL("SELECT FromPeriod FROM Sources WHERE Source = " & Quot(planVersion))
@@ -55,6 +55,12 @@ Sub XLCode()
     rsFacts.ActiveConnection = connection
     rsFacts.UpdateBatch
     connection.Close
+    sql = "UPDATE tblFacts LEFT JOIN tblSKU ON tblFacts.SKU = tblSKU.SKU " & _
+        "SET tblFacts.Pieces = IIf(tblSKU.WeightInKg = 0 OR ISNULL(tblSKU.WeightInKg), 0, tblFacts.Volume / tblSKU.WeightInKg), " & _
+        "tblFacts.Drinks = IIf(tblSKU.CupsPerKg = 0 OR ISNULL(tblSKU.CupsPerKg), 0, tblFacts.Volume * tblSKU.CupsPerKg), " & _
+        "tblFacts.tDiscs = IIf(tblSKU.tDiscPerKg = 0 OR ISNULL(tblSKU.tDiscPerKg), 0, tblFacts.Volume * tblSKU.tDiscPerKg) " & _
+        "WHERE tblFacts.PlanVersion = " & Quot(PlanVersion) " AND tblFacts.Forecast = 'yes'"
+    XLImp sql, "Calculate Drinks, tDiscs and Pieces ..."
 End Sub
 Function GetEmptyRecordSet(ByVal sTable As String) As Object
     Dim rsData As Object, connection As Object
