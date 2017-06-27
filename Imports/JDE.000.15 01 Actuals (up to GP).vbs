@@ -1,6 +1,7 @@
 Sub XLCode()
     Dim wks As Worksheet, row As Long, rs As Object, planVersion As String, period As String
     Dim connection As Object, country As String, bladen As Variant, sht As Variant, periodFrom As String, sVolumeType As String
+    Dim sql As String
 
     bladen = Array("EcoTax € kg", "CTax € kg", "MB € kg", "Display € kg")
 
@@ -127,6 +128,12 @@ End If
     XLImp "INSERT INTO tblFacts(Country, PlanVersion, Period, SourceType, Forecast, SKU, Customer, PromoNonPromo, OnOffInvoice, VolumeType, CostOfSales, DisplayCosts) " & _
       "SELECT a.Country, a.PlanVersion, a.Period, 'DsplCOGS', a.Forecast, b.DisplaySKU, a.Customer, a.PromoNonPromo, a.OnOffInvoice, a.VolumeType, - 1 * a.CostOfSales, - 1 * a.DisplayCosts " & _
       "FROM tblFacts AS a INNER JOIN tblMixedDisplays AS b ON a.SKU = b.SKU WHERE a.SourceType = 'DsplCOGS' AND a.PlanVersion = " & Quot(planVersion) & " AND a.Country = " & Quot(country) & " AND a.Period = " & Quot(period), "correct cogs of skus in case of display"
+    sql = "UPDATE tblFacts LEFT JOIN tblSKU ON tblFacts.SKU = tblSKU.SKU " & _
+        "SET tblFacts.Pieces = IIf(tblSKU.WeightInKg = 0 OR ISNULL(tblSKU.WeightInKg), 0, tblFacts.Volume / tblSKU.WeightInKg), " & _
+        "tblFacts.Drinks = IIf(tblSKU.CupsPerKg = 0 OR ISNULL(tblSKU.CupsPerKg), 0, tblFacts.Volume * tblSKU.CupsPerKg), " & _
+        "tblFacts.tDiscs = IIf(tblSKU.tDiscPerKg = 0 OR ISNULL(tblSKU.tDiscPerKg), 0, tblFacts.Volume * tblSKU.tDiscPerKg) " & _
+        "WHERE tblFacts.PlanVersion = " & Quot(PlanVersion) & " AND tblFacts.Forecast = 'yes'"
+    XLImp sql, "Calculate Drinks, tDiscs and Pieces ..."
     connection.Close 
 End Sub
 Function GetEmptyRecordSet(ByVal sTable As String) As Object
