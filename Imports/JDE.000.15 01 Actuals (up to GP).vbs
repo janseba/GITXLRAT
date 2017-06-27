@@ -132,7 +132,7 @@ End If
         "SET tblFacts.Pieces = IIf(tblSKU.WeightInKg = 0 OR ISNULL(tblSKU.WeightInKg), 0, tblFacts.Volume / tblSKU.WeightInKg), " & _
         "tblFacts.Drinks = IIf(tblSKU.CupsPerKg = 0 OR ISNULL(tblSKU.CupsPerKg), 0, tblFacts.Volume * tblSKU.CupsPerKg), " & _
         "tblFacts.tDiscs = IIf(tblSKU.tDiscPerKg = 0 OR ISNULL(tblSKU.tDiscPerKg), 0, tblFacts.Volume * tblSKU.tDiscPerKg) " & _
-        "WHERE tblFacts.PlanVersion = " & Quot(PlanVersion) & " AND tblFacts.Forecast = 'no'"
+        "WHERE tblFacts.PlanVersion = " & Quot(PlanVersion) & " AND tblFacts.Forecast = 'no' AND Period = " & Quot(period)
     XLImp sql, "Calculate Drinks, tDiscs and Pieces ..."
     connection.Close 
 End Sub
