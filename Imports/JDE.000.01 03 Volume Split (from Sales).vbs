@@ -1,6 +1,7 @@
 Sub XLCode()
     Dim wks As Worksheet, row As Long, rs As Object, period As Integer, planVersion As String, periodFrom As String
-    Dim connection As Object, country As String, startPeriod As Integer, wksData As Worksheet
+    Dim connection As Object, country As String, startPeriod As Integer, wksData As Worksheet, rsTonLtr As Object
+    Dim rsFacts As Object, sql As String
     Set wksData = Worksheets("XLRep 02 Distribute Volume fro")
     planVersion = GetPar(wksData.[A1], "Plan Version=")
     periodFrom = GetSQL("SELECT FromPeriod FROM Sources WHERE Source = " & Quot(planVersion))
@@ -8,6 +9,8 @@ Sub XLCode()
         XLImp "ERROR", "The plan version has been locked for input": Exit Sub
     End If
     Set rs = GetEmptyRecordSet("SELECT * FROM tblDistributionKeys WHERE PlanVersion IS NULL")
+    Set rsTonLtr = GetEmptyRecordSet("SELECT DISTINCT SKU FROM tblSKU WHERE VolumeType = 'TonLtr'")
+    Set rsFacts = GetEmptyRecordSet("SELECT * FROM tblFacts WHERE PlanVersion IS NULL")
     startPeriod = CInt(Right(periodFrom, 2))
         
     For Each wks In ActiveWorkbook.Sheets
@@ -24,6 +27,20 @@ Sub XLCode()
                                 rs.Fields("AlternativeSKU") = .Cells(row, 1)
                                 rs.Fields("Customer") = .[A1]
                                 rs.Fields("VolumeSplit") = .Cells(row, period + 4)
+                                If .Cells(row, period + 18) <> 0 Then
+                                    rsFacts.AddNew
+                                    rsFacts.Fields("Country") = "AT"
+                                    rsFacts.Fields("PlanVersion") = planVersion
+                                    rsFacts.Fields("Period") = CLng(Left(periodFrom, 4)) * 100 + period
+                                    rsFacts.Fields("SourceType") = "FCVolume"
+                                    rsFacts.Fields("Forecast") = "yes"
+                                    rsFacts.Fields("SKU") = Left(.Cells(row, 2), InStr(.Cells(row, 2), " |") - 1)
+                                    rsFacts.Fields("Customer") = .[A1]
+                                    rsFacts.Fields("PromoNonPromo") = "NonPromo"
+                                    rsFacts.Fields("OnOffInvoice") = "On"
+                                    If IsTonLtr(rsFacts.Fields("SKU"), rsTonLtr) Then rsFacts.Fields("VolumeType") = "TonLtr" Else rsFacts.Fields("VolumeType") = "Ton"
+                                    rsFacts.Fields("Volume") = .Cells(row, period + 18)
+                                End If
                             End If
                         Next period
                     End If
@@ -34,9 +51,18 @@ Sub XLCode()
     
     Set connection = GetDBConnection: connection.Open
     connection.Execute "DELETE FROM tblDistributionKeys WHERE PlanVersion = " & Quot(planVersion)
+    connection.Execute "DELETE FROM tblFacts WHERE Forecast = 'yes' AND PlanVersion = " & Quot(planVersion)
     rs.ActiveConnection = connection
     rs.UpdateBatch
+    rsFacts.ActiveConnection = connection
+    rsFacts.UpdateBatch
     connection.Close
+    sql = "UPDATE tblFacts LEFT JOIN tblSKU ON tblFacts.SKU = tblSKU.SKU " & _
+        "SET tblFacts.Pieces = IIf(tblSKU.WeightInKg = 0 OR ISNULL(tblSKU.WeightInKg), 0, tblFacts.Volume / tblSKU.WeightInKg), " & _
+        "tblFacts.Drinks = IIf(tblSKU.CupsPerKg = 0 OR ISNULL(tblSKU.CupsPerKg), 0, tblFacts.Volume * tblSKU.CupsPerKg), " & _
+        "tblFacts.tDiscs = IIf(tblSKU.tDiscPerKg = 0 OR ISNULL(tblSKU.tDiscPerKg), 0, tblFacts.Volume * tblSKU.tDiscPerKg) " & _
+        "WHERE tblFacts.PlanVersion = " & Quot(PlanVersion) & " AND tblFacts.Forecast = 'yes'"
+    XLImp sql, "Calculate Drinks, tDiscs and Pieces ..."
 End Sub
 Function GetEmptyRecordSet(ByVal sTable As String) As Object
     Dim rsData As Object, connection As Object
@@ -64,4 +90,14 @@ Function GetDBConnection() As Object
     Set dbConnection = CreateObject("ADODB.Connection")
     dbConnection.Open connectionString: dbConnection.Close
     Set GetDBConnection = dbConnection
+End Function
+
+Function IsTonLtr(ByVal sku As String, ByRef rs As Object)
+    Dim result As Boolean
+    result = False
+    rs.Filter = ""
+    rs.MoveFirst
+    rs.Filter = "SKU=" & sku
+    If Not rs.EOF Then result = True
+    IsTonLtr = result
 End Function
