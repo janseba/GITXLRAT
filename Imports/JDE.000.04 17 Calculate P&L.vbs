@@ -15,5 +15,15 @@ Sub XLCode()
         "SET tblFacts.FAP1 = tblFacts.Pieces * tblFAP.FAPPerPiece " & _
         "WHERE tblFacts.Forecast = 'yes' AND tblFacts.PlanVersion = " & Quot(planVersion)
     XLImp sql, "Calculate GOS..."
+
+    sql = "UPDATE tblFacts SET tblFacts.LPA = 0 WHERE tblFacts.Forecast = 'yes' " & _
+       " AND tblFacts.PlanVersion = " & Quot(planVersion)
+    XLImp sql, "Reset LPA to 0..."
+    sql = "UPDATE (tblFacts INNER JOIN tblPPP " & _
+        "ON tblFacts.PlanVersion=tblPPP.PlanVersion AND tblFacts.Period = tblPPP.Period AND tblFacts.Customer = tblPPP.Customer) " & _
+        "INNER JOIN tblSKU ON tblFacts.SKU = tblSKU.SKU AND tblPPP.SalesConditionLevel = tblSKU.SalesConditionLevel " & _
+        "SET tblFacts.LPA = -1 * tblFacts.Pieces * tblPPP.PPPPerPiece " & _
+        "WHERE tblFacts.Forecast = 'yes' AND tblFacts.PlanVersion = " & Quot(planVersion)
+    XLImp sql, "Calculate PPP..."    
     
 End Sub
