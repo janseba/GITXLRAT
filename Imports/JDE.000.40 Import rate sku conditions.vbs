@@ -1,5 +1,6 @@
 Sub XLCode()
     ImportGOS
+    ImportPPP
 End Sub
 
 Sub ImportGOS()
@@ -28,6 +29,36 @@ Sub ImportGOS()
     End With
     Set connection = GetDBConnection: connection.Open
     connection.Execute "DELETE FROM tblFAP WHERE PlanVersion = " & Quot(planVersion)
+    rs.ActiveConnection = connection
+    rs.UpdateBatch
+End Sub
+Sub ImportPPP()
+    Dim wks As Worksheet, row As Long, rs As Object, periodFrom As Integer, period As Integer, periodTo As Integer
+    Dim year As Long, planVersion As String, connection As Object, col As Integer
+    Set wks = ActiveWorkbook.Sheets("Std PPP per customer")
+    Set rs = GetEmptyRecordSet("SELECT * FROM tblPPP WHERE PlanVersion IS NULL")
+    periodFrom = GetPeriodFrom()
+    periodTo = GetPeriodTo()
+    planVersion = GetPlanVersion()
+    year = GetYear()
+    With wks
+        For row = 6 To .UsedRange.Rows.Count
+            For col = 3 To .UsedRange.Columns.Count
+                If Not IsEmpty(.Cells(row, 2)) Then
+                    If Not IsEmpty(.Cells(4, col)) And .Cells(row, col) <> 0 And IsNumeric(.Cells(row, col)) Then
+                        rs.AddNew
+                        rs.Fields("PlanVersion") = planVersion
+                        rs.Fields("Customer") = .Cells(2, col)
+                        rs.Fields("SalesConditionLevel") = .Cells(row, 2)
+                        rs.Fields("Period") = .Cells(4, col)
+                        rs.Fields("PPPPerPiece") = .Cells(row, col)
+                    End If
+                End If
+            Next col
+        Next row
+    End With
+    Set connection = GetDBConnection: connection.Open
+    connection.Execute "DELETE FROM tblPPP WHERE PlanVersion = " & Quot(planVersion)
     rs.ActiveConnection = connection
     rs.UpdateBatch
 End Sub
