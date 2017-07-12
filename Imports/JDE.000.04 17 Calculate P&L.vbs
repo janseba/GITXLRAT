@@ -16,6 +16,7 @@ Sub XLCode()
         "WHERE tblFacts.Forecast = 'yes' AND tblFacts.PlanVersion = " & Quot(planVersion)
     XLImp sql, "Calculate GOS..."
 
+    'Calculate PPP (LPA)
     sql = "UPDATE tblFacts SET tblFacts.LPA = 0 WHERE tblFacts.Forecast = 'yes' " & _
        " AND tblFacts.PlanVersion = " & Quot(planVersion)
     XLImp sql, "Reset LPA to 0..."
