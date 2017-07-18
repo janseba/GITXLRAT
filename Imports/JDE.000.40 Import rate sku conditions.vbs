@@ -3,6 +3,7 @@ Sub XLCode()
     ImportPPP
     ImportTPRPromoShare
     ImportTPROnInvoice
+    ImportTPROffInvoice
 End Sub
 
 Sub ImportGOS()
@@ -106,7 +107,7 @@ Sub ImportTPROnInvoice()
     With wks
         For row = 6 To .UsedRange.Rows.Count
             For col = 3 To .UsedRange.Columns.Count
-                If Not IsEmpty(.Cells(row, 2)) Then
+                If Not IsEmpty(.Cells(row, 2)) And Not IsError(.Cells(row, col)) Then
                     If Not IsEmpty(.Cells(4, col)) And .Cells(row, col) <> 0 And IsNumeric(.Cells(row, col)) Then
                         rs.AddNew
                         rs.Fields("PlanVersion") = planVersion
@@ -127,7 +128,7 @@ End Sub
 Sub ImportTPROffInvoice()
     Dim wks As Worksheet, row As Long, rs As Object, periodFrom As Integer, period As Integer, periodTo As Integer
     Dim year As Long, planVersion As String, connection As Object, col As Integer
-    Set wks = ActiveWorkbook.Sheets("TPR-on invoice")
+    Set wks = ActiveWorkbook.Sheets("TPR-off invoice")
     Set rs = GetEmptyRecordSet("SELECT * FROM tblTPROffInvoice WHERE PlanVersion IS NULL")
     periodFrom = GetPeriodFrom()
     periodTo = GetPeriodTo()
@@ -200,3 +201,4 @@ Function GetDBConnection() As Object
     dbConnection.Open connectionString: dbConnection.Close
     Set GetDBConnection = dbConnection
 End Function
+
