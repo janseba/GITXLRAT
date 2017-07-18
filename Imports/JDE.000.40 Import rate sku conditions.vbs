@@ -17,7 +17,7 @@ Sub ImportGOS()
     year = GetYear()
     With wks
         For row = 6 To .UsedRange.Rows.Count
-            If Not IsEmpty(.Cells(row, 2)) Then
+            If Not IsEmpty(.Cells(row, 2)) And Not IsError(.Cells(row, period + 2)) Then
                 For period = periodFrom To periodTo
                     If .Cells(row, period + 2) <> 0 Then
                         rs.AddNew
@@ -47,7 +47,7 @@ Sub ImportPPP()
     With wks
         For row = 6 To .UsedRange.Rows.Count
             For col = 3 To .UsedRange.Columns.Count
-                If Not IsEmpty(.Cells(row, 2)) Then
+                If Not IsEmpty(.Cells(row, 2)) And Not IsError(.Cells(row, col)) Then
                     If Not IsEmpty(.Cells(4, col)) And .Cells(row, col) <> 0 And IsNumeric(.Cells(row, col)) Then
                         rs.AddNew
                         rs.Fields("PlanVersion") = planVersion
@@ -77,7 +77,7 @@ Sub ImportTPRPromoShare()
     With wks
         For row = 6 To .UsedRange.Rows.Count
             For col = 3 To .UsedRange.Columns.Count
-                If Not IsEmpty(.Cells(row, 2)) Then
+                If Not IsEmpty(.Cells(row, 2)) And Not IsError(.Cells(row, col)) Then
                     If Not IsEmpty(.Cells(4, col)) And .Cells(row, col) <> 0 And IsNumeric(.Cells(row, col)) Then
                         rs.AddNew
                         rs.Fields("PlanVersion") = planVersion
