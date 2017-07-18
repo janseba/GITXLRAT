@@ -34,7 +34,7 @@ Sub XLCode()
     sql = "UPDATE ((tblFacts INNER JOIN tblTPRPromoShare " & _
         "ON tblFacts.PlanVersion=tblTPRPromoShare.PlanVersion AND tblFacts.Period = tblTPRPromoShare.Period AND tblFacts.Customer = tblTPRPromoShare.Customer) " & _
         "INNER JOIN tblTPROnInvoice ON tblFacts.PlanVersion = tblTPROnInvoice.planVersion AND tblFacts.Period = tblTPROnInvoice.Period AND tblFacts.Customer = tblTPROnInvoice.Customer) " & _
-        "INNER JOIN tblSKU ON tblFacts.SKU = tblSKU.SKU AND tblTPRPromoShare.SalesConditionLevel = tblSKU.SalesConditionLevel AND tblTPROnInvoice.SalesConditionLevel = tblSKU.SalesConditionLevel" & _
+        "INNER JOIN tblSKU ON tblFacts.SKU = tblSKU.SKU AND tblTPRPromoShare.SalesConditionLevel = tblSKU.SalesConditionLevel AND tblTPROnInvoice.SalesConditionLevel = tblSKU.SalesConditionLevel " & _
         "SET tblFacts.discount2eur = -1 * tblFacts.Pieces * tblTPRPromoShare.PromoShare * tblTPROnInvoice.TPROnInvoice " & _
         "WHERE tblFacts.Forecast = 'yes' AND tblFacts.PlanVersion = " & Quot(planVersion)
     XLImp sql, "Calculate PPP..."    
