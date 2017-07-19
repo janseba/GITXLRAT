@@ -46,11 +46,9 @@ GROUP  BY a.planversion,
 HAVING Sum(a.volume) <> 0 
 UNION ALL 
 SELECT fact.planversion, 
-       fact.sku + " | " + fact.customer + " | " 
-       + fact.period, 
-       'Missing PPP' 
+       fact.sku + " | " + fact.period, 
+       'Missing FAP' 
 FROM   (SELECT a.planversion, 
-               a.customer, 
                a.sku, 
                a.period, 
                b.salesconditionlevel, 
@@ -59,15 +57,13 @@ FROM   (SELECT a.planversion,
         FROM   tblfacts AS a 
                INNER JOIN tblsku AS B 
                        ON a.sku = b.sku) AS fact 
-       LEFT JOIN tblppp AS ppp 
-              ON fact.planversion = ppp.planversion 
-                 AND fact.customer = ppp.customer 
-                 AND fact.salesconditionlevel = ppp.salesconditionlevel 
-                 AND fact.period = ppp.period 
-WHERE  ppp.planversion IS NULL 
+       LEFT JOIN tblFap AS fap 
+              ON fact.planversion = fap.planversion 
+                 AND fact.salesconditionlevel = fap.salescondition 
+                 AND fact.period = fap.period 
+WHERE  fap.planversion IS NULL 
        AND fact.forecast = 'yes' 
 GROUP  BY fact.planversion, 
           fact.sku, 
-          fact.period, 
-          fact.customer 
-HAVING Sum(fact.volume) <> 0   
+          fact.period
+HAVING Sum(fact.volume) <> 0
