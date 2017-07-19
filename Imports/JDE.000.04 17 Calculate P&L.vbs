@@ -30,13 +30,24 @@ Sub XLCode()
     'Calculate TPR On-Invoice (discount1eur)
     sql = "UPDATE tblFacts SET tblFacts.discount1eur = 0 WHERE tblFacts.Forecast = 'yes' " & _
        " AND tblFacts.PlanVersion = " & Quot(planVersion)
-    XLImp sql, "Reset discount2eur to 0..."
+    XLImp sql, "Reset discount1eur to 0..."
     sql = "UPDATE ((tblFacts INNER JOIN tblTPRPromoShare " & _
         "ON tblFacts.PlanVersion=tblTPRPromoShare.PlanVersion AND tblFacts.Period = tblTPRPromoShare.Period AND tblFacts.Customer = tblTPRPromoShare.Customer) " & _
         "INNER JOIN tblTPROnInvoice ON tblFacts.PlanVersion = tblTPROnInvoice.planVersion AND tblFacts.Period = tblTPROnInvoice.Period AND tblFacts.Customer = tblTPROnInvoice.Customer) " & _
         "INNER JOIN tblSKU ON tblFacts.SKU = tblSKU.SKU AND tblTPRPromoShare.SalesConditionLevel = tblSKU.SalesConditionLevel AND tblTPROnInvoice.SalesConditionLevel = tblSKU.SalesConditionLevel " & _
         "SET tblFacts.discount1eur = -1 * tblFacts.Pieces * tblTPRPromoShare.PromoShare * tblTPROnInvoice.TPROnInvoice " & _
         "WHERE tblFacts.Forecast = 'yes' AND tblFacts.PlanVersion = " & Quot(planVersion)
-    XLImp sql, "Calculate TPR On-Invoice..."    
-    
+    XLImp sql, "Calculate TPR On-Invoice..."
+
+    'Calculate TPR Off-Invoice (discount1eur)
+    sql = "UPDATE tblFacts SET tblFacts.discount4eur = 0 WHERE tblFacts.Forecast = 'yes' " & _
+       " AND tblFacts.PlanVersion = " & Quot(planVersion)
+    XLImp sql, "Reset discount4eur to 0..."
+    sql = "UPDATE ((tblFacts INNER JOIN tblTPRPromoShare " & _
+        "ON tblFacts.PlanVersion=tblTPRPromoShare.PlanVersion AND tblFacts.Period = tblTPRPromoShare.Period AND tblFacts.Customer = tblTPRPromoShare.Customer) " & _
+        "INNER JOIN tblTPROffInvoice ON tblFacts.PlanVersion = tblTPROffInvoice.planVersion AND tblFacts.Period = tblTPROffInvoice.Period AND tblFacts.Customer = tblTPROffInvoice.Customer) " & _
+        "INNER JOIN tblSKU ON tblFacts.SKU = tblSKU.SKU AND tblTPRPromoShare.SalesConditionLevel = tblSKU.SalesConditionLevel AND tblTPROffInvoice.SalesConditionLevel = tblSKU.SalesConditionLevel " & _
+        "SET tblFacts.discount4eur = -1 * tblFacts.Pieces * tblTPRPromoShare.PromoShare * tblTPROffInvoice.TPROffInvoice " & _
+        "WHERE tblFacts.Forecast = 'yes' AND tblFacts.PlanVersion = " & Quot(planVersion)
+    XLImp sql, "Calculate TPR Off-Invoice..."      
 End Sub
