@@ -49,5 +49,28 @@ Sub XLCode()
         "INNER JOIN tblSKU ON tblFacts.SKU = tblSKU.SKU AND tblTPRPromoShare.SalesConditionLevel = tblSKU.SalesConditionLevel AND tblTPROffInvoice.SalesConditionLevel = tblSKU.SalesConditionLevel " & _
         "SET tblFacts.discount4eur = -1 * tblFacts.Pieces * tblTPRPromoShare.PromoShare * tblTPROffInvoice.TPROffInvoice " & _
         "WHERE tblFacts.Forecast = 'yes' AND tblFacts.PlanVersion = " & Quot(planVersion)
-    XLImp sql, "Calculate TPR Off-Invoice..."      
+    XLImp sql, "Calculate TPR Off-Invoice..."
+
+    'Calculate CashDiscount (14_3TermofPayment)
+    sql = "UPDATE tblFacts SET tblFacts.14_3TermofPayment = 0 WHERE tblFacts.Forecast = 'yes' " & _
+       " AND tblFacts.PlanVersion = " & Quot(planVersion)
+    XLImp sql, "Reset LPA to 0..."
+    sql = "UPDATE (tblFacts INNER JOIN tblCashDiscount " & _
+        "ON tblFacts.PlanVersion=tblCashDiscount.PlanVersion AND tblFacts.Period = tblCashDiscount.Period AND tblFacts.Customer = tblCashDiscount.Customer) " & _
+        "INNER JOIN tblSKU ON tblFacts.SKU = tblSKU.SKU AND tblCashDiscount.SalesConditionLevel = tblSKU.SalesConditionLevel " & _
+        "SET tblFacts.14_3TermofPayment = -1 * (tblFacts.FAP1 + tblFacts.LPA + tblFacts.discount1eur) * tblCashDiscount.CashDiscount " & _
+        "WHERE tblFacts.Forecast = 'yes' AND tblFacts.PlanVersion = " & Quot(planVersion)
+    XLImp sql, "Calculate Cash Discount..." 
+
+    'Calculate Bonus % NIS (discount2percnis)
+    sql = "UPDATE tblFacts SET tblFacts.discount2percnis = 0 WHERE tblFacts.Forecast = 'yes' " & _
+       " AND tblFacts.PlanVersion = " & Quot(planVersion)
+    XLImp sql, "Reset LPA to 0..."
+    sql = "UPDATE (tblFacts INNER JOIN tblBonusPercNis " & _
+        "ON tblFacts.PlanVersion=tblBonusPercNis.PlanVersion AND tblFacts.Period = tblBonusPercNis.Period AND tblFacts.Customer = tblBonusPercNis.Customer) " & _
+        "INNER JOIN tblSKU ON tblFacts.SKU = tblSKU.SKU AND tblBonusPercNis.SalesConditionLevel = tblSKU.SalesConditionLevel " & _
+        "SET tblFacts.discount2percnis = -1 * (tblFacts.FAP1 + tblFacts.LPA + tblFacts.discount1eur) * tblBonusPercNis.BonusPerc " & _
+        "WHERE tblFacts.Forecast = 'yes' AND tblFacts.PlanVersion = " & Quot(planVersion)
+    XLImp sql, "Calculate Cash Discount..."
+
 End Sub
