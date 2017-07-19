@@ -5,6 +5,7 @@ Sub XLCode()
     ImportTPROnInvoice
     ImportTPROffInvoice
     ImportBonusPercNIS
+    ImportCashDiscount
 End Sub
 
 Sub ImportGOS()
