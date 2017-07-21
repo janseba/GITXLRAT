@@ -120,8 +120,7 @@ Sub XLCode()
     Next w
 
     'Copy Listing Fees to seperate field
-    RunSQL("UPDATE tblFacts SET [17_1OneListFee] = [107_TABDFOffinvTAS] WHERE LEFT(SourceType, 4) = 'FDLF' AND Forecast = 'yes' AND PlanVersion = " Quot(planVersion))
-End Sub
+    RunSQL "UPDATE tblFacts SET [17_1OneListFee] = [107_TABDFOffinvTAS] WHERE LEFT(SourceType, 4) = 'FDLF' AND Forecast = 'yes' AND PlanVersion = " & Quot(planVersion)End Sub
 
 Function GetRecordSet(ByVal sTable As String) As Object
     Dim rsData As Object, connection As Object
