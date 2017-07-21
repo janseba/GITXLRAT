@@ -60,7 +60,7 @@ Sub XLCode()
                                     rsFacts.Fields("Country") = "AT"
                                     rsFacts.Fields("PlanVersion") = planVersion
                                     rsFacts.Fields("Period") = rsNIS.Fields("Period").Value
-                                    rsFacts.Fields("SourceType") = "FD" & discountCode & Format(iCol - 1, "00")
+                                    rsFacts.Fields("SourceType") = "FD" & discountCode & Right(.Cells(3, iCol),7)
                                     rsFacts.Fields("Forecast") = "yes"
                                     rsFacts.Fields("SKU") = rsNIS.Fields("SKU").Value
                                     rsFacts.Fields("Customer") = rsNIS.Fields("Customer").Value
@@ -86,7 +86,7 @@ Sub XLCode()
                                     rsFacts.Fields("Country") = "AT"
                                     rsFacts.Fields("PlanVersion") = planVersion
                                     rsFacts.Fields("Period") = dealFrom + period - 1
-                                    rsFacts.Fields("SourceType") = "FD" & discountCode & Format(iCol - 1, "00")
+                                    rsFacts.Fields("SourceType") = "FD" & discountCode & Right(.Cells(3, iCol),7)
                                     rsFacts.Fields("Forecast") = "yes"
                                     rsFacts.Fields("SKU") = sSKU
                                     rsFacts.Fields("Customer") = .Cells(2, iCol)
@@ -100,7 +100,7 @@ Sub XLCode()
                                     rsFacts.Fields("Country") = "AT"
                                     rsFacts.Fields("PlanVersion") = planVersion
                                     rsFacts.Fields("Period") = dealFrom + period - 1
-                                    rsFacts.Fields("SourceType") = "FD" & discountCode & Format(iCol - 1, "00")
+                                    rsFacts.Fields("SourceType") = "FD" & discountCode & Right(.Cells(3, iCol),7)
                                     rsFacts.Fields("Forecast") = "yes"
                                     rsFacts.Fields("SKU") = sSKU
                                     rsFacts.Fields("Customer") = .Cells(2, iCol)
@@ -118,6 +118,9 @@ Sub XLCode()
             Next iCol
         End With
     Next w
+
+    'Copy Listing Fees to seperate field
+    RunSQL("UPDATE tblFacts SET [17_1OneListFee] = [107_TABDFOffinvTAS] WHERE LEFT(SourceType, 4) = 'FDLF' AND Forecast = 'yes' AND PlanVersion = " Quot(planVersion))
 End Sub
 
 Function GetRecordSet(ByVal sTable As String) As Object
