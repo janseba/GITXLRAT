@@ -18,16 +18,16 @@ Sub XLCode()
             If wks.Name <> "cost ADJ abs" Then
                 For row = 3 To wks.UsedRange.Rows.Count
                     If Not IsEmpty(.Cells(row, 1)) Then
-                        If .Cells(row, period + 5) <> 0 Then
-                            For period = startPeriod To 12
+                        For period = startPeriod To 12
+                            If .Cells(row, period + 5) <> 0 Then
                                 rs.AddNew
                                 rs.Fields("PlanVersion") = planVersion
                                 rs.Fields("LineType") = sht
                                 rs.Fields("sku") = .Cells(row, 1)
                                 rs.Fields("Period") = CLng(Left(periodFrom, 4)) * 100 + period
                                 rs.Fields("Amount") = IIf(IsError(.Cells(row, period + 5)), 0, .Cells(row, period + 5))
-                            Next period
-                        End If
+                            End If
+                        Next period
                     End If
                 Next row
             Else
