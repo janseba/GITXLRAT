@@ -8,7 +8,7 @@ Sub XLCode()
     country = GetPar([A1], "Country=")
     periodFrom = GetPar([A1], "Period From=")
     periodTo = GetPar([A1], "Period To=")
-    forecastOrActual = GetPar([A1], "Forecast / Actuals=")
+    forecastOrActual = "Actuals"
     startPeriod = CInt(Right(periodFrom, 2))
     endPeriod = CInt(Right(periodTo, 2))
     startPlanVersion = GetSQL("SELECT FromPeriod FROM sources WHERE Source = " & Quot(planVersion))
