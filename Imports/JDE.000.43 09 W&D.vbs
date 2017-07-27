@@ -16,14 +16,16 @@ Sub XLCode()
         Set wks = ActiveWorkbook.Sheets(sheetName)
         With wks
             For row = 3 To wks.UsedRange.Rows.Count
-                If Not IsEmpty(.Cells(row, 3)) Then
+                If Not IsEmpty(.Cells(row, 1)) Then
                     For period = startPeriod To 12
-                        rs.AddNew
-                        rs.Fields("PlanVersion") = planVersion
-                        rs.Fields("LineType") = .Name
-                        rs.Fields("ProfitCenter") = .Cells(row, 3)
-                        rs.Fields("Period") = CLng(Left(periodFrom, 4)) * 100 + period
-                        rs.Fields("Amount") = .Cells(row, period + 3)
+                        If .Cells(row, period + 3) <> 0 Then
+                            rs.AddNew
+                            rs.Fields("PlanVersion") = planVersion
+                            rs.Fields("LineType") = .Name
+                            rs.Fields("ProfitCenter") = .Cells(row, 3)
+                            rs.Fields("Period") = CLng(Left(periodFrom, 4)) * 100 + period
+                            rs.Fields("Amount") = .Cells(row, period + 3)
+                        End If
                     Next period
                 End If
             Next row
