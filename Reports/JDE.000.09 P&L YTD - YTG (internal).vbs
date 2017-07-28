@@ -57,20 +57,22 @@ Sub AddDataSheets(ByVal name As String, ByVal planversion As String, ByVal entit
         If customerFilter = "" Then
             sql = "SELECT * FROM View_CustomerCategoryPL WHERE Planversion = " & Quot(planversion) & " AND Country = " & Quot(entity)
         Else
-            sql = "SELECT * FROM View_CustomerCategoryPL WHERE Planversion = " & Quot(planversion) & " AND Country = " & Quot(entity) & " AND ConditionCustomer IN ('" & customerFilter & "')"
+            sql = "SELECT * FROM View_CustomerCategoryPL WHERE Planversion = " & Quot(planversion) & " AND Country = " & Quot(entity) & " AND CustomerName IN ('" & customerFilter & "')"
         End If
     Else
         If customerFilter = "" Then
             sql = "SELECT * FROM View_CustomerCategoryPL WHERE Planversion = " & Quot(planversion) & " AND Country = " & Quot(entity) & " AND ProfitCenter IN ('" & categoryFilter & "')"
         Else
-            sql = "SELECT * FROM View_CustomerCategoryPL WHERE Planversion = " & Quot(planversion) & " AND Country = " & Quot(entity) & " AND ProfitCenter  IN ('" & categoryFilter & "')" & " AND ConditionCustomer IN ('" & customerFilter & "')"
+            sql = "SELECT * FROM View_CustomerCategoryPL WHERE Planversion = " & Quot(planversion) & " AND Country = " & Quot(entity) & " AND ProfitCenter  IN ('" & categoryFilter & "')" & " AND CustomerName IN ('" & customerFilter & "')"
         End If
     End If
     vPlan = GetDBData(sql)
-    wks.[A1].Resize(UBound(vPlan, 2) + 1, UBound(vPlan, 1) + 1) = Application.Transpose(vPlan)
-    For i = 1 To UBound(vNames, 2)
-        Names.Add name & "." & vNames(1, i), Intersect(wks.UsedRange, wks.Cells(1, i).EntireColumn).Resize(wks.UsedRange.Rows.Count)
-    Next i
+    If IsArray(vPlan) Then
+        wks.[A1].Resize(UBound(vPlan, 2) + 1, UBound(vPlan, 1) + 1) = Application.Transpose(vPlan)
+        For i = 1 To UBound(vNames, 2)
+            Names.Add name & "." & vNames(1, i), Intersect(wks.UsedRange, wks.Cells(1, i).EntireColumn).Resize(wks.UsedRange.Rows.Count)
+        Next i
+    End If
 End Sub
 Sub vulValidatie(ByRef wksValidatie As Worksheet)
 
@@ -78,7 +80,7 @@ Sub vulValidatie(ByRef wksValidatie As Worksheet)
     
     'Customer validation
     Set rng = wksValidatie.[B4]
-    vData = GetDBData("SELECT DISTINCT ConditionCustomer FROM tblCustomer WHERE ConditionCustomer IS NOT NULL Order BY ConditionCustomer ")
+    vData = GetDBData("SELECT DISTINCT CustomerName FROM tblCustomer WHERE CustomerName IS NOT NULL Order BY CustomerName ")
     rng.Resize(UBound(vData, 2) + 1) = Application.Transpose(vData)
     Names.Add "lst.Customer", rng.Offset(-2).Resize(UBound(vData, 2) + 3)
 
@@ -90,7 +92,7 @@ Sub vulValidatie(ByRef wksValidatie As Worksheet)
     
     'SKU validation
     Set rng = wksValidatie.[D4]
-    vData = GetDBData("SELECT DISTINCT ProfitCenter, Prdha2, AlternativeHierarchy FROM tblSKU WHERE ProfitCenter IS NOT NULL AND Prdha2 IS NOT NULL AND AlternativeHierarchy IS NOT NULL ORDER BY ProfitCenter, Prdha2, AlternativeHierarchy")
+    vData = GetDBData("SELECT DISTINCT ProfitCenter, Prdha2, EUProductHierarchy FROM tblSKU WHERE ProfitCenter IS NOT NULL AND Prdha2 IS NOT NULL AND EUProductHierarchy IS NOT NULL ORDER BY ProfitCenter, Prdha2, EUProductHierarchy")
     rng.Resize(UBound(vData, 2) + 1, UBound(vData, 1) + 1) = Application.Transpose(vData)
     Names.Add "tbl.SKUGroups", rng.Offset(-2).Resize(UBound(vData, 2) + 3, UBound(vData, 1) + 1)
     
@@ -108,7 +110,7 @@ Sub vulValidatie(ByRef wksValidatie As Worksheet)
 
     'Level3
     Set rng = wksValidatie.[I4]
-    vData = GetDBData("SELECT DISTINCT AlternativeHierarchy FROM tblSKU WHERE AlternativeHierarchy IS NOT NULL ORDER BY AlternativeHierarchy")
+    vData = GetDBData("SELECT DISTINCT EUProductHierarchy FROM tblSKU WHERE EUProductHierarchy IS NOT NULL ORDER BY EUProductHierarchy")
     rng.Resize(UBound(vData, 2) + 1) = Application.Transpose(vData)
     Names.Add "lst.Level3", rng.Offset(-2).Resize(UBound(vData, 2) + 3)
     
@@ -171,3 +173,4 @@ Function GetDBConnection() As Object
     dbConnection.Open connectionString: dbConnection.Close
     Set GetDBConnection = dbConnection
 End Function
+
