@@ -1,38 +1,4 @@
-Option Explicit
-
-Private Function Num(ByVal amt As Variant, Optional ByVal dec As Integer = 2) As String
-    Num = Run("XLReporting.xlam!Num", amt, dec)
-End Function
-
-Private Function Quot(ByVal txt As Variant, Optional ByVal key As Boolean = False) As String
-    Quot = Run("XLReporting.xlam!Quot", txt, key)
-End Function
-
-Private Function GetPar(ByVal txt As String, ByVal key As String, Optional ByVal sep As String = ";") As String
-    GetPar = Run("XLReporting.xlam!GetPar", txt, key, sep)
-End Function
-    
-Private Function GetSQL(ByVal sql As String) As Variant
-    GetSQL = Run("XLReporting.xlam!GetSQL", sql)
-End Function
-
-Private Function RunSQL(ByVal sql As String) As Variant
-    Run "XLReporting.xlam!RunSQL", sql
-End Function
-
-Public Function XLRep(ByVal From As String, ByVal Retrieve As String, ByVal Where As String) As Variant
-    XLRep = Run("XLReporting.xlam!XLRep", From, Retrieve, Where)
-End Function
-
-Private Function XLImp(ByVal sql As String, Optional ByVal msg As String = "Working...") As Long
-    XLImp = Run("XLReporting.xlam!XLImp", sql, msg)
-End Function
-
-Private Function GetPref(ByVal id As Integer) As String
-    GetPref = Run("XLReporting.xlam!GetPref", id)
-End Function
-
-    Sub XLCode()
+Sub XLCode()
 
     Dim template As String, wksData As Worksheet, vNames As Variant, i As Long, wksReport As Worksheet
     Dim Period As Long, wkbTemplate As Workbook, wksValidatie As Worksheet, plan As String, ref1 As String, ref2 As String
