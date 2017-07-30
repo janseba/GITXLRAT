@@ -2,7 +2,7 @@ SELECT Country
 	,PlanVersion
 	,Period
 	,Cint(Right(Period, 2)) AS [Month]
-	,IIf(ISNULL(a.AlternativeHierarchy), "NA", a.AlternativeHierarchy) AS AlternativeHierarchy
+	,IIf(ISNULL(a.EUProductHierarchy), "NA", a.EUProductHierarchy) AS EUProductHierarchy
 	,IIf(ISNULL(a.Brand), "NA", a.Brand) AS Brand
 	,IIf(ISNULL(a.Prdha2), "NA", a.Prdha2) AS Prdha2
 	,IIf(ISNULL(a.ProfitCenter), "NA", a.ProfitCenter) AS ProfitCenter
@@ -55,7 +55,7 @@ FROM View_Facts AS a
 GROUP BY Country
 	,PlanVersion
 	,Period
-	,AlternativeHierarchy
+	,EUProductHierarchy
 	,Brand
 	,Prdha2
 	,ProfitCenter
