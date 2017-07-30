@@ -28,7 +28,7 @@ wksReport.Range("ptr.Plan").Value = plan
 wksReport.Range("ptr.Ref1").Value = ref1
 wksReport.Range("ptr.PlanYear").Value = planYear
 wksReport.Range("ptr.Ref1Year").Value = ref1Year
-wksReport.Range("ptr.ConditionCustomer").Value = "*"
+wksReport.Range("ptr.PlanningCustomer").Value = "*"
 wksReport.Range("ptr.CustomerName").Value = "*"
 
 If categoryFilter <> "" Then wksReport.[Z4].Value = "Selected Categories: " & categoryFilter
@@ -58,10 +58,10 @@ Sub vulValidatie(ByRef wksValidatie As Worksheet)
     
     'Condition customer validation
     Set rng = wksValidatie.[B3]
-    rangeNames = Array("plan.ConditionCustomer", "ref1.ConditionCustomer")
+    rangeNames = Array("plan.PlanningCustomer", "ref1.PlanningCustomer")
     vData = GetValidation(rangeNames)
     rng.Resize(UBound(vData) + 1) = Application.Transpose(vData)
-    Names.Add "lst.ConditionCustomer", rng.Offset(-1).Resize(UBound(vData) + 2)
+    Names.Add "lst.PlanningCustomer", rng.Offset(-1).Resize(UBound(vData) + 2)
     
     'Customer name validation
     Set rng = wksValidatie.[C3]
@@ -73,7 +73,7 @@ Sub vulValidatie(ByRef wksValidatie As Worksheet)
 End Sub
 
 Sub AddDataSheets(ByVal name As String, ByVal planversion As String, ByVal entity As String, ByRef wksData As Worksheet)
-    Dim wks As Worksheet, vPlan As Variant, i As Integer, vNames As Variant, conditionCustomer As String, customer As String, sql As String
+    Dim wks As Worksheet, vPlan As Variant, i As Integer, vNames As Variant, PlanningCustomer As String, customer As String, sql As String
     Dim period As Variant, monthFrom As Integer, monthTo As Integer
     period = GetPar(wksData.[A2], "Period=")
     If period <> "" Then
@@ -86,13 +86,13 @@ Sub AddDataSheets(ByVal name As String, ByVal planversion As String, ByVal entit
     End If
     ActiveWorkbook.Sheets("P&L By Category").Range("ptr.PeriodFrom") = monthFrom
     ActiveWorkbook.Sheets("P&L By Category").Range("ptr.PeriodTo") = monthTo
-    conditionCustomer = GetPar(wksData.[A2], "Condition Customer=")
+    PlanningCustomer = GetPar(wksData.[A2], "Planning Customer=")
     customer = GetPar(wksData.[A2], "Customer Name=")
     vNames = Intersect(wksData.UsedRange, wksData.Range("5:5"))
     Set wks = ActiveWorkbook.Sheets.Add(Before:=wksData): wks.name = name
-    conditionCustomer = Replace(conditionCustomer, ",", "','")
+    PlanningCustomer = Replace(PlanningCustomer, ",", "','")
     customer = Replace(customer, ",", "','")
-    If conditionCustomer = "" Then
+    If PlanningCustomer = "" Then
         If customer = "" Then
             sql = "SELECT * FROM View_CustomerCategoryPL WHERE Planversion = " & Quot(planversion) & " AND Country = " & Quot(entity) & " AND Month BETWEEN " & monthFrom & " AND " & monthTo
         Else
@@ -100,9 +100,9 @@ Sub AddDataSheets(ByVal name As String, ByVal planversion As String, ByVal entit
         End If
     Else
         If customer = "" Then
-            sql = "SELECT * FROM View_CustomerCategoryPL WHERE Planversion = " & Quot(planversion) & " AND Country = " & Quot(entity) & " AND Month BETWEEN " & monthFrom & " AND " & monthTo & " AND ConditionCustomer IN ('" & conditionCustomer & "')"
+            sql = "SELECT * FROM View_CustomerCategoryPL WHERE Planversion = " & Quot(planversion) & " AND Country = " & Quot(entity) & " AND Month BETWEEN " & monthFrom & " AND " & monthTo & " AND PlanningCustomer IN ('" & PlanningCustomer & "')"
         Else
-            sql = "SELECT * FROM View_CustomerCategoryPL WHERE Planversion = " & Quot(planversion) & " AND Country = " & Quot(entity) & " AND Month BETWEEN " & monthFrom & " AND " & monthTo & " AND ConditionCustomer  IN ('" & conditionCustomer & "')" & " AND CustomerName IN ('" & customer & "')"
+            sql = "SELECT * FROM View_CustomerCategoryPL WHERE Planversion = " & Quot(planversion) & " AND Country = " & Quot(entity) & " AND Month BETWEEN " & monthFrom & " AND " & monthTo & " AND PlanningCustomer  IN ('" & PlanningCustomer & "')" & " AND CustomerName IN ('" & customer & "')"
         End If
     End If
     vPlan = GetDBData(sql)
