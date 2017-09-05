@@ -47,7 +47,7 @@ SELECT a.planversion,
        Sum(a.totdisplaycosts)       AS DisplayCosts, 
        Sum(a.totmb)                 AS MB, 
        Sum(a.totgreendot)           AS Greendot,
-       SUM(a.mbadjustments)         AS COGS Adjustments,
+       SUM(a.mbadjustments)         AS COGSAdj,
        Sum(a.[17_1onelistfee])      AS ListingFees 
 FROM   (view_facts AS a 
         LEFT JOIN tblsku AS b 
