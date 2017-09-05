@@ -70,7 +70,8 @@ SELECT [a.101_salesreturnsoffinvtas]
        [a.15_2specialoccasion]                                 AS FixedAmounts, 
        Iif(a.volumetype = 'Tons', a.volume, 0)                 AS VolumeTons, 
        a.*, 
-       b.description                                           AS SKUDescription, 
+       b.description                                           AS SKUDescription 
+       , 
        b.prdha4, 
        b.prdha3, 
        b.prdha2, 
